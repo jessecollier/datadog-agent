@@ -46,12 +46,12 @@ var allHookPoints = []*HookPoint{
 	},
 	{
 		Name:       "sys_chown",
-		KProbes:    syscallKprobe("chown"),
+		KProbes:    append(syscallKprobe("chown"), syscallKprobe("chown16")...),
 		EventTypes: []eval.EventType{"chown"},
 	},
 	{
 		Name:       "sys_fchown",
-		KProbes:    syscallKprobe("fchown"),
+		KProbes:    append(syscallKprobe("fchown"), syscallKprobe("fchown16")...),
 		EventTypes: []eval.EventType{"chown"},
 	},
 	{
@@ -61,7 +61,7 @@ var allHookPoints = []*HookPoint{
 	},
 	{
 		Name:       "sys_lchown",
-		KProbes:    syscallKprobe("lchown"),
+		KProbes:    append(syscallKprobe("lchown"), syscallKprobe("lchown16")...),
 		EventTypes: []eval.EventType{"chown"},
 	},
 	{

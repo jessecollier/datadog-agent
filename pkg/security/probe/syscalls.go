@@ -330,9 +330,53 @@ func (s Syscall) MarshalText() ([]byte, error) {
 	return []byte(strings.ToLower(strings.TrimPrefix(s.String(), "Sys"))), nil
 }
 
-func syscallKprobe(name string) []*ebpf.KProbe {
-	return []*ebpf.KProbe{{
-		EntryFunc: "kprobe/" + getSyscallFnName(name),
-		ExitFunc:  "kretprobe/" + getSyscallFnName(name),
-	}}
+// cache of the syscall prefix depending on kernel version
+var syscallPrefix string
+
+func getSyscallFnName(name string) string {
+	if syscallPrefix == "" {
+		syscall, err := ebpf.GetSyscallFnName("open")
+		if err != nil {
+			panic(err)
+		}
+		syscallPrefix = strings.TrimSuffix(syscall, "open")
+	}
+
+	return syscallPrefix + name
+}
+
+func getIA32SyscallFnName(name string) string {
+	return "__ia32_sys_" + name
+}
+
+func getCompatSyscallFnName(name string) string {
+	return "__ia32_compat_sys_" + name
+}
+
+func syscallKprobe(name string, compat ...bool) []*ebpf.KProbe {
+	kprobes := []*ebpf.KProbe{
+		{
+			Name:      getSyscallFnName(name),
+			EntryFunc: "kprobe/" + getSyscallFnName(name),
+			ExitFunc:  "kretprobe/" + getSyscallFnName(name),
+		},
+	}
+
+	if ebpf.RuntimeArch == "x64" && syscallPrefix != "SyS_" {
+		if len(compat) > 0 {
+			kprobes = append(kprobes, &ebpf.KProbe{
+				Name:      getCompatSyscallFnName(name),
+				EntryFunc: "kprobe/" + getCompatSyscallFnName(name),
+				ExitFunc:  "kretprobe/" + getCompatSyscallFnName(name),
+			})
+		} else {
+			kprobes = append(kprobes, &ebpf.KProbe{
+				Name:      getIA32SyscallFnName(name),
+				EntryFunc: "kprobe/" + getIA32SyscallFnName(name),
+				ExitFunc:  "kretprobe/" + getIA32SyscallFnName(name),
+			})
+		}
+	}
+
+	return kprobes
 }

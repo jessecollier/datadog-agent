@@ -162,7 +162,7 @@ func TestRemoveXAttr(t *testing.T) {
 	}
 	defer testDrive.Close()
 
-	test, err := newTestModule(nil, []*rules.RuleDefinition{rule}, testOpts{enableFilters: true})
+	test, err := newTestModule(nil, []*rules.RuleDefinition{rule}, testOpts{enableFilters: true, testDir: testDrive.Root()})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,6 +178,7 @@ func TestRemoveXAttr(t *testing.T) {
 		t.Fatal(err)
 	}
 	xattrNamePtr := unsafe.Pointer(xattrName)
+	xattrValuePtr := unsafe.Pointer(&[]byte{})
 
 	t.Run("removexattr", func(t *testing.T) {
 		// create file
@@ -189,7 +190,7 @@ func TestRemoveXAttr(t *testing.T) {
 		defer os.Remove(testFile)
 
 		// set xattr
-		_, _, errno := syscall.Syscall6(syscall.SYS_FSETXATTR, f.Fd(), uintptr(xattrNamePtr), 0, 1, 0, 0)
+		_, _, errno := syscall.Syscall6(syscall.SYS_FSETXATTR, f.Fd(), uintptr(xattrNamePtr), uintptr(xattrValuePtr), 0, 1, 0)
 		if errno != 0 {
 			t.Fatal(error(errno))
 		}
@@ -276,7 +277,7 @@ func TestRemoveXAttr(t *testing.T) {
 		defer os.Remove(testFile)
 
 		// set xattr
-		_, _, errno := syscall.Syscall6(syscall.SYS_FSETXATTR, f.Fd(), uintptr(xattrNamePtr), 0, 1, 0, 0)
+		_, _, errno := syscall.Syscall6(syscall.SYS_FSETXATTR, f.Fd(), uintptr(xattrNamePtr), uintptr(xattrNamePtr), 1, 0, 0)
 		if errno != 0 {
 			t.Fatal(error(errno))
 		}

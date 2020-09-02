@@ -35,7 +35,7 @@ var openCapabilities = Capabilities{
 var openHookPoints = []*HookPoint{
 	{
 		Name:       "sys_open",
-		KProbes:    syscallKprobe("open"),
+		KProbes:    syscallKprobe("open", true),
 		EventTypes: []eval.EventType{"open"},
 	},
 	{
@@ -50,12 +50,12 @@ var openHookPoints = []*HookPoint{
 	},
 	{
 		Name:       "sys_truncate",
-		KProbes:    syscallKprobe("truncate"),
+		KProbes:    syscallKprobe("truncate", true),
 		EventTypes: []eval.EventType{"open"},
 	},
 	{
 		Name:       "sys_openat",
-		KProbes:    syscallKprobe("openat"),
+		KProbes:    syscallKprobe("openat", true),
 		EventTypes: []eval.EventType{"open"},
 	},
 	{
