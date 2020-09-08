@@ -150,6 +150,8 @@
 /test/e2e/                              @DataDog/container-integrations
 /test/integration/                      @DataDog/container-integrations
 /test/kitchen/                          @DataDog/agent-platform
+/test/kitchen/kitchen-azure-runtime-security-test.yml @DataDog/agent-security
+/test/kitchen/site-cookbooks/dd-agent-runtime-security-check/ @DataDog/agent-security
 /test/system/                           @DataDog/agent-core
 
 /tools/                                 @DataDog/agent-platform
