@@ -102,7 +102,6 @@ type AgentConfig struct {
 	MaxConnectionsStateBuffered    int
 	OffsetGuessThreshold           uint64
 	EnableTracepoints              bool
-	EnableNetwork                  bool
 
 	// DNS stats configuration
 	CollectDNSStats bool
@@ -224,7 +223,6 @@ func NewDefaultAgentConfig(canAccessContainers bool) *AgentConfig {
 		ConntrackRateLimit:    500,
 		OffsetGuessThreshold:  400,
 		EnableTracepoints:     false,
-		EnableNetwork:         false,
 
 		// Check config
 		EnabledChecks: enabledChecks,
