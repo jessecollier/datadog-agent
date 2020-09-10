@@ -698,6 +698,12 @@ int kprobe__ip_make_skb(struct pt_regs* ctx) {
 
     conn_tuple_t t = {};
     if (!read_conn_tuple(&t, sk, pid_tgid, CONN_TYPE_UDP)) {
+        if (!are_fl4_offsets_known()) {
+            log_debug("ERR: src/dst addr not set src:%d,dst:%d. fl4 offsets are not known\n", t.saddr_l, t.daddr_l);
+            increment_telemetry_count(udp_send_missed);
+            return 0;
+        }
+
         struct flowi4* fl4 = (struct flowi4*)PT_REGS_PARM2(ctx);
         bpf_probe_read(&t.saddr_l, sizeof(u32), ((char*)fl4) + offset_saddr_fl4());
         bpf_probe_read(&t.daddr_l, sizeof(u32), ((char*)fl4) + offset_daddr_fl4());
