@@ -10,4 +10,3 @@ fixes:
   - |
     Fix a bug where network stats were not being generated for UDP packets sent using "unconnected"
     UDP connections
-
