@@ -687,6 +687,7 @@ int kprobe__ip6_make_skb(struct pt_regs* ctx) {
      return 0;
 }
 
+// Note: This is used only in tne UDP send path.
 SEC("kprobe/ip_make_skb")
 int kprobe__ip_make_skb(struct pt_regs* ctx) {
     struct sock* sk = (struct sock*)PT_REGS_PARM1(ctx);
@@ -706,39 +707,21 @@ int kprobe__ip_make_skb(struct pt_regs* ctx) {
             increment_telemetry_count(udp_send_missed);
             return 0;
         }
+
         bpf_probe_read(&t.sport, sizeof(t.sport), ((char*)fl4) + offset_sport_fl4());
         bpf_probe_read(&t.dport, sizeof(t.dport), ((char*)fl4) + offset_dport_fl4());
 
-         if (t.sport == 0 || t.dport == 0) {
-             log_debug("ERR(fl4): src/dst port not set: src:%d, dst:%d\n", t.sport, t.dport);
-             increment_telemetry_count(udp_send_missed);
-             return 0;
-         }
+        if (t.sport == 0 || t.dport == 0) {
+            log_debug("ERR(fl4): src/dst port not set: src:%d, dst:%d\n", t.sport, t.dport);
+            increment_telemetry_count(udp_send_missed);
+            return 0;
+        }
 
         t.sport = ntohs(t.sport);
         t.dport = ntohs(t.dport);
     }
 
     log_debug("kprobe/ip_send_skb: pid_tgid: %d, size: %d\n", pid_tgid, size);
-    handle_message(&t, size, 0);
-    increment_telemetry_count(udp_send_processed);
-
-    return 0;
-}
-
-SEC("kprobe/udp_sendmsg/pre_4_1_0")
-int kprobe__udp_sendmsg__pre_4_1_0(struct pt_regs* ctx) {
-    struct sock* sk = (struct sock*)PT_REGS_PARM2(ctx);
-    size_t size = (size_t)PT_REGS_PARM4(ctx);
-    u64 pid_tgid = bpf_get_current_pid_tgid();
-
-    conn_tuple_t t = {};
-    if (!read_conn_tuple(&t, sk, pid_tgid, CONN_TYPE_UDP)) {
-        increment_telemetry_count(udp_send_missed);
-        return 0;
-    }
-
-    log_debug("kprobe/udp_sendmsg/pre_4_1_0: pid_tgid: %d, size: %d\n", pid_tgid, size);
     handle_message(&t, size, 0);
     increment_telemetry_count(udp_send_processed);
 

@@ -46,8 +46,6 @@ const (
 	IPMakeSkb  ProbeName = "kprobe/ip_make_skb"
 	IP6MakeSkb ProbeName = "kprobe/ip6_make_skb"
 
-	// UDPSendMsgPre410 traces the udp_sendmsg() system call on kernels prior to 4.1.0
-	UDPSendMsgPre410 ProbeName = "kprobe/udp_sendmsg/pre_4_1_0"
 	// UDPRecvMsg traces the udp_recvmsg() system call
 	UDPRecvMsg ProbeName = "kprobe/udp_recvmsg"
 	// UDPRecvMsgPre410 traces the udp_recvmsg() system call on kernels prior to 4.1.0
@@ -114,7 +112,6 @@ var (
 	// the actual eBPF function that it should bind to
 	KProbeOverrides = map[ProbeName]ProbeName{
 		TCPSendMsgPre410: TCPSendMsg,
-		UDPSendMsgPre410: IPMakeSkb,
 		UDPRecvMsgPre410: UDPRecvMsg,
 		SysBindX64:       SysBind,
 		SysSocketX64:     SysSocket,

@@ -65,7 +65,6 @@ func NewManager(closedHandler *PerfHandler) *manager.Manager {
 			{Section: string(TCPSetState)},
 			{Section: string(IPMakeSkb)},
 			{Section: string(IP6MakeSkb)},
-			{Section: string(UDPSendMsgPre410)},
 			{Section: string(UDPRecvMsg)},
 			{Section: string(UDPRecvMsgPre410)},
 			{Section: string(UDPRecvMsgReturn), KProbeMaxActive: maxActive},
