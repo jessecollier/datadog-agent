@@ -406,6 +406,9 @@ func InitConfig(config Config) {
 	config.BindEnvAndSetDefault("kubernetes_map_services_on_ip", false) // temporary opt-out of the new mapping logic
 	config.BindEnvAndSetDefault("kubernetes_apiserver_use_protobuf", false)
 
+	config.BindEnvAndSetDefault("prometheus_scrape.enabled", false)
+	config.SetKnown("prometheus_scrape.checks")
+
 	// SNMP
 	config.SetKnown("snmp_listener.discovery_interval")
 	config.SetKnown("snmp_listener.allowed_failures")
