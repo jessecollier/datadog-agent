@@ -27,6 +27,11 @@ var (
 	ErrMountNotFound = errors.New("unknown mount ID")
 )
 
+// mountTables is the list of eBPF tables used by mount's kProbes
+var mountTables = []string{
+	"mount_id_offset",
+}
+
 // mountHookPoints holds the list of probes required to track mounts
 var mountHookPoints = []*HookPoint{
 	{
@@ -275,6 +280,7 @@ func newFSDevice() *FSDevice {
 
 // MountResolver represents a cache for mountpoints and the corresponding file systems
 type MountResolver struct {
+	probe   *Probe
 	lock    sync.RWMutex
 	devices map[uint32]*FSDevice
 	mounts  map[uint32]*Mount
@@ -390,9 +396,26 @@ func (mr *MountResolver) GetMountPath(mountID uint32, numlower int32) (string, s
 	return m.containerMountPath, m.mountPath, m.RootStr, nil
 }
 
+func (mr *MountResolver) setMountIDOffset() error {
+	if mr.probe.kernelVersion != 0 && mr.probe.kernelVersion <= kernel4_13 {
+		offsetItem := ebpf.Uint32TableItem(268)
+		table := mr.probe.Table("mount_id_offset")
+		if err := table.Set(ebpf.ZeroUint32TableItem, offsetItem); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (mr *MountResolver) Start() error {
+	return mr.setMountIDOffset()
+}
+
 // NewMountResolver instantiates a new mount resolver
-func NewMountResolver() *MountResolver {
+func NewMountResolver(probe *Probe) *MountResolver {
 	return &MountResolver{
+		probe:   probe,
 		lock:    sync.RWMutex{},
 		devices: make(map[uint32]*FSDevice),
 		mounts:  make(map[uint32]*Mount),
